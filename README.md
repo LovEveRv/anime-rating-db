@@ -2,10 +2,10 @@
 An anime database mainly collecting and analyzing ratings from several famous websites.
 
 Home page: https://imagasaikou.cn/animeratingdb
-Wiki page: https://imagasaikou.cn/animeratingdb/wiki
-This website is still under development.
 
-For more details of this repo, you can check the wiki page.
+Wiki page: https://imagasaikou.cn/animeratingdb/wiki
+
+This website is still under development. For more details, you can check the wiki page.
 
 ## Usage
 
