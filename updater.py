@@ -5,13 +5,14 @@ import shutil
 import argparse
 
 from tqdm import tqdm
-from fetch import anime_news_network, myanimelist, bangumi, anikore
+from fetch import anime_news_network, myanimelist, bangumi, anilist
 from analyze import adjust, bayesian
 
 
 MAL_DIR = 'fetch/mal'
 BGM_DIR = 'fetch/bgm'
 ANN_DIR = 'fetch/ann'
+ANL_DIR = 'fetch/anilist'
 
 
 def clear_cache():
@@ -25,9 +26,12 @@ def clear_cache():
         shutil.rmtree(BGM_DIR)
     if os.path.exists(ANN_DIR):
         shutil.rmtree(ANN_DIR)
+    if os.path.exists(ANL_DIR):
+        shutil.rmtree(ANL_DIR)
     os.mkdir(MAL_DIR)
     os.mkdir(BGM_DIR)
     os.mkdir(ANN_DIR)
+    os.mkdir(ANL_DIR)
 
 
 def update_once(args, save_method, pre_data={}):
@@ -65,11 +69,16 @@ def update_once(args, save_method, pre_data={}):
             bgm_res = bangumi.get_anime_detail(item['bgm'], True, BGM_DIR)
         else:
             bgm_res = None
+        if item['anilist'] is not None:
+            anl_res = anilist.get_anime_detail(item['anilist'], True, ANL_DIR)
+        else:
+            anl_res = None
         
         all_data[uid] = {
             'MAL': mal_res,
             'ANN': ann_res,
             'BGM': bgm_res,
+            'AniList': anl_res,
         }
         # save to tmp file
         with open('all.tmp.json', 'w', encoding='utf-8') as f:
@@ -89,6 +98,8 @@ def update_once(args, save_method, pre_data={}):
     scores = bayesian.calc_bayesian_score(ratings, 10)
     for uid, score in zip(ids, scores):
         all_data[uid]['BGM']['bayesian_score'] = score
+    
+    # TODO: consider scores from AniList
 
     # normalize and average
     all_data = adjust.adjust_scores(all_data)
