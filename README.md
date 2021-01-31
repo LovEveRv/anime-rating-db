@@ -59,7 +59,7 @@ mapping = response.json()
 
 | Field   | Type  | Nullable | Description                                              |
 | :-:     | :-:   | :-:      | :-:                                                      |
-| mal     | `Int` | Yes      | ID of [MyAnimeList](https://myanimelist.net)             |
+| mal     | `Int` | No       | ID of [MyAnimeList](https://myanimelist.net)             |
 | anidb   | `Int` | Yes      | ID of [AniDB](https://anidb.net)                         |
 | anilist | `Int` | Yes      | ID of [AniList](https://anilist.co)                      |
 | ann     | `Int` | Yes      | ID of [AnimeNewsNetwork](https://animenewsnetwork.com)   |
