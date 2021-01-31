@@ -1,0 +1,4 @@
+beautifulsoup4==4.8.1
+tqdm==4.36.1
+python-dateutil==2.8.0
+matplotlib==3.3.3
