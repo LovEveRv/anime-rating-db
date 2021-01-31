@@ -118,15 +118,33 @@ def always_update(args, save_method):
     @param save_method: a function, used for saving data to file/sql/oss.
     """
 
+    myanimelist.jikan_api = args.jikan
+    myanimelist.req_delay = args.delay
+    myanimelist.use_api_pool = args.jikan_use_api_pool
+    if args.jikan_use_api_pool:
+        if args.jikan_api_pool == '':
+            raise RuntimeError('You should provide the api pool if you enable Jikan api pool.')
+        myanimelist.jikan_api_pool = [url for url in args.jikan_api_pool.split(' ') if url != '']
+        myanimelist.jikan_api = myanimelist.jikan_api_pool[0]
+        myanimelist.jikan_api_idx = 0
+
+    if args.checkpoint != '':
+        with open(args.checkpoint, 'r', encoding='utf-8') as f:
+            pre_data = json.load(f)
+    else:
+        pre_data = {}
+    
     while True:
         start_time = time.time()
         clear_cache()
-        update_once(args, save_method)
+        update_once(args, save_method, pre_data)
         end_time = time.time()
         time_spent = int(end_time - start_time)
         time_to_sleep = max(args.interval - time_spent, 0)
         print('\n\n\nSleeping for {} seconds\n\n\n'.format(time_to_sleep))
         time.sleep(time_to_sleep)
+        del pre_data
+        pre_data = {}
 
 
 if __name__ == '__main__':
@@ -141,17 +159,9 @@ if __name__ == '__main__':
         help='Delay seconds for requests')
     arg_parser.add_argument('--interval', type=int, default=86400,
         help='Update interval (seconds)')
+    arg_parser.add_argument('--checkpoint', default='',
+        help='File path to checkpoint (all.tmp.json).')
     args = arg_parser.parse_args()
-
-    myanimelist.jikan_api = args.jikan
-    myanimelist.req_delay = args.delay
-    myanimelist.use_api_pool = args.jikan_use_api_pool
-    if args.jikan_use_api_pool:
-        if args.jikan_api_pool == '':
-            raise RuntimeError('You should provide the api pool if you enable Jikan api pool.')
-        myanimelist.jikan_api_pool = [url for url in args.jikan_api_pool.split(' ') if url != '']
-        myanimelist.jikan_api = myanimelist.jikan_api_pool[0]
-        myanimelist.jikan_api_idx = 0
 
     def save_json(data):
         with open('all.save.json', 'w', encoding='utf-8') as f:
