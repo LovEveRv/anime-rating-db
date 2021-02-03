@@ -146,14 +146,15 @@ def get_anime_detail(mal_id, cache=False, cache_dir='.'):
             resp = requests.get(api_url)
             # response in json format
             data = resp.json()
-            if cache and 'error' not in data:
+            if 'error' in data:
+                if data['status'] == 403:
+                    # may get 403 for requesting too fast
+                    change_api_url()
+                    return get_anime_detail(mal_id, cache, cache_dir)
+            elif cache:
                 # add to cache
                 with open(cache_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=2, ensure_ascii=False)
-        if 'error' in data and data['status'] == 403:
-            # may get 403 for requesting too fast
-            change_api_url()
-            return get_anime_detail(mal_id)
         return parse_data(data)
     except Exception:
         print('mal_id: {}'.format(mal_id))
