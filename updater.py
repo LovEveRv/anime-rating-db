@@ -56,9 +56,8 @@ def update_once(args, save_method, pre_data={}):
         
         assert item['mal'] is not None
         mal_res = myanimelist.get_anime_detail(item['mal'], True, MAL_DIR)
-        if mal_res is None:
-            continue
-        if mal_res['type'] not in allow_types:
+        if mal_res is None or mal_res['type'] not in allow_types:
+            time.sleep(args.delay)
             continue
         
         if item['ann'] is not None:

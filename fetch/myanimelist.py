@@ -66,6 +66,7 @@ def parse_data(data):
         return detail
     except Exception:
         traceback.print_exc()
+        print(data)
         return None
 
 
