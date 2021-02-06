@@ -77,7 +77,7 @@ def get_anime_detail(ani_id, cache=False, cache_dir='.'):
             resp = requests.get(url, headers=headers)
             # response in json format
             html = resp.text
-            data = {}
+            data = {'id': ani_id}
             soup = BeautifulSoup(html, 'html.parser')
             title = soup.select('section.l-animeDetailHeader')[0].select('h1')[0].text
             title = title.strip().replace('\r\n', '')
