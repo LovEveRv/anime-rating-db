@@ -80,9 +80,9 @@ def get_anime_detail(ani_id, cache=False, cache_dir='.'):
             data = {}
             soup = BeautifulSoup(html, 'html.parser')
             title = soup.select('section.l-animeDetailHeader')[0].select('h1')[0].text
-            title = title.strip()
+            title = title.strip().replace('\r\n', '')
             data['title'] = title
-            match_obj = re.match(r'「(.*?)（(.*?)）」', title)
+            match_obj = re.match(r'「(.*)（(TVアニメ動画|アニメ映画|OVA)）」', title)
             if match_obj:
                 data['jp_name'] = match_obj.group(1)
                 data['type'] = match_obj.group(2)
