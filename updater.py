@@ -3,9 +3,10 @@ import time
 import os
 import shutil
 import argparse
+import numpy as np
 
 from tqdm import tqdm
-from fetch import anime_news_network, myanimelist, bangumi, anilist
+from fetch import anime_news_network, myanimelist, bangumi, anilist, anikore
 from analyze import adjust, bayesian
 
 
@@ -13,6 +14,7 @@ MAL_DIR = 'fetch/mal'
 BGM_DIR = 'fetch/bgm'
 ANN_DIR = 'fetch/ann'
 ANL_DIR = 'fetch/anilist'
+AKR_DIR = 'fetch/anikore'
 
 
 def clear_cache():
@@ -28,10 +30,13 @@ def clear_cache():
         shutil.rmtree(ANN_DIR)
     if os.path.exists(ANL_DIR):
         shutil.rmtree(ANL_DIR)
+    if os.path.exists(AKR_DIR):
+        shutil.rmtree(AKR_DIR)
     os.mkdir(MAL_DIR)
     os.mkdir(BGM_DIR)
     os.mkdir(ANN_DIR)
     os.mkdir(ANL_DIR)
+    os.mkdir(AKR_DIR)
 
 
 def update_once(args, save_method, pre_data={}):
@@ -51,6 +56,7 @@ def update_once(args, save_method, pre_data={}):
     # fetch data
     all_data = pre_data
     for uid, item in tqdm(mapping.items()):
+        start = time.time()
         if uid in all_data:
             continue
         
@@ -72,20 +78,28 @@ def update_once(args, save_method, pre_data={}):
             anl_res = anilist.get_anime_detail(item['anilist'], True, ANL_DIR)
         else:
             anl_res = None
+        if item['anikore'] is not None:
+            akr_res = anikore.get_anime_detail(item['anikore'], True, AKR_DIR)
+        else:
+            akr_res = None
         
         all_data[uid] = {
             'MAL': mal_res,
             'ANN': ann_res,
             'BGM': bgm_res,
             'AniList': anl_res,
+            'Anikore': akr_res,
         }
         # save to tmp file
         with open('all.tmp.json', 'w', encoding='utf-8') as f:
             json.dump(all_data, f, indent=2, ensure_ascii=False)
         # request delay
-        time.sleep(args.delay)
+        end = time.time()
+        if start - end < args.delay:
+            time.sleep(args.delay - (end - start))
     
     # re-calculate the scores
+    # for bangumi
     ids, ratings = [], []
     for uid, item in all_data.items():
         bgm = item['BGM']
@@ -97,12 +111,35 @@ def update_once(args, save_method, pre_data={}):
     scores = bayesian.calc_bayesian_score(ratings, 10)
     for uid, score in zip(ids, scores):
         all_data[uid]['BGM']['bayesian_score'] = score
-    
-    # TODO: consider scores from AniList
+    # for anilist
+    ids, ratings = [], []
+    for uid, item in all_data.items():
+        anl = item['AniList']
+        if anl is not None and anl['stats']['scoreDistribution']:
+            ids.append(uid)
+            rating_detail = [0 for _ in range(10)]
+            for stat in anl['stats']['scoreDistribution']:
+                rating_detail[int(stat['score'] / 10) - 1] = stat['amount']
+            all_data[uid]['AniList']['votes'] = int(np.sum(rating_detail))
+            ratings.append(rating_detail)
+    scores = bayesian.calc_bayesian_score(ratings, 10)
+    for uid, score in zip(ids, scores):
+        all_data[uid]['AniList']['bayesian_score'] = score
+    # for anikore
+    ids, ratings = [], [[], []]
+    for uid, item in all_data.items():
+        akr = item['Anikore']
+        if akr is not None and akr['score'] is not None:
+            ids.append(uid)
+            ratings[0].append(akr['score'] * 2)
+            ratings[1].append(akr['votes'])
+    scores = bayesian.calc_bayesian_score_by_average(ratings, 10)
+    for uid, score in zip(ids, scores):
+        all_data[uid]['Anikore']['bayesian_score'] = score
 
     # normalize and average
     all_data = adjust.adjust_scores(all_data)
-    min_count = 3
+    min_count = 4
     all_list = []
     for uid, item in all_data.items():
         count = 0

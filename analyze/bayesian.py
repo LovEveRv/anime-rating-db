@@ -31,6 +31,32 @@ def calc_bayesian_score(ratings, min_votes=100):
     return bayesian
 
 
+def calc_bayesian_score_by_average(ratings, min_votes=100):
+    """
+    Calculate score using Bayesian Estimation.
+
+    @param ratings: list/np.array, shaped 2 x N, where N is number of samples.
+                    ratings[0] are average scores, ratings[1] are corresponding votes.
+    @param min_votes: int, means the min number of votes one sample must reach to get a bayesian score.
+    @return: list, shaped N, each item is a bayesian score of that sample. if votes < min_votes,
+             bayesian score will be None.
+    """
+
+    score = np.array(ratings[0])
+    votes = np.array(ratings[1])
+    v_sum = np.sum(votes)
+    s_sum = np.sum(score * votes)
+    overall_avg = s_sum / v_sum
+
+    bayesian = []
+    for v, s in zip(votes, score):
+        if v < min_votes:
+            bayesian.append(None)
+        else:
+            bayesian.append((s * v + min_votes * overall_avg) / (v + min_votes))
+    return bayesian
+
+
 if __name__ == '__main__':
     """
     Just for testing.
