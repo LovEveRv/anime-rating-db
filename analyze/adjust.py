@@ -11,7 +11,8 @@ def norm(scores, mean=0, std=1):
 
     _mean = np.mean(scores)
     _std = np.std(scores)
-    _scores = (scores - _mean + mean) / _std * std
+    # print(_mean, _std)
+    _scores = (scores - _mean) / _std * std + mean
     return _scores
 
 
@@ -29,12 +30,16 @@ def adjust_scores(all_data):
         'ANN': 'bayesian_score',
         'MAL': 'score',
         'BGM': 'bayesian_score',
+        'AniList': 'bayesian_score',
+        'Anikore': 'bayesian_score',
     }
 
     all_scores = {
         'ANN': ([], []),
         'MAL': ([], []),
         'BGM': ([], []),
+        'AniList': ([], []),
+        'Anikore': ([], []),
     }
     
     for uid, item in all_data.items():
@@ -53,6 +58,7 @@ def adjust_scores(all_data):
 
     overall_mean = np.mean(overall_scores)
     overall_std = np.std(overall_scores)
+    # print(overall_mean, overall_std)
 
     for site, data in all_scores.items():
         scores, uids = data
