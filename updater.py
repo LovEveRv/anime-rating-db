@@ -95,7 +95,7 @@ def update_once(args, save_method, pre_data={}):
             json.dump(all_data, f, indent=2, ensure_ascii=False)
         # request delay
         end = time.time()
-        if start - end < args.delay:
+        if end - start < args.delay:
             time.sleep(args.delay - (end - start))
     
     # re-calculate the scores
