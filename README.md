@@ -64,6 +64,7 @@ mapping = response.json()
 | anilist | `Int` | Yes      | ID of [AniList](https://anilist.co)                      |
 | ann     | `Int` | Yes      | ID of [AnimeNewsNetwork](https://animenewsnetwork.com)   |
 | bgm     | `Int` | Yes      | ID of [Bangumi](https://bgm.tv) (**May be wrong**)       |
+| anikore | `Int` | Yes      | ID of [Anikore](https://anikore.jp) (**May be wrong**)   |
 
 ## Thanks
 + [soruly/burstlink](https://github.com/soruly/burstlink)
