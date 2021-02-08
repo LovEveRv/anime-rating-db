@@ -77,6 +77,11 @@ def get_anime_detail(ani_id, cache=False, cache_dir='.'):
             resp = requests.get(url, headers=headers)
             # response in json format
             html = resp.text
+            if not html:
+                # got empty data
+                # retry in 30s
+                time.sleep(30)
+                return get_anime_detail(ani_id, cache, cache_dir)
             data = {'id': ani_id}
             soup = BeautifulSoup(html, 'html.parser')
             title = soup.select('section.l-animeDetailHeader')[0].select('h1')[0].text
@@ -97,6 +102,7 @@ def get_anime_detail(ani_id, cache=False, cache_dir='.'):
                     json.dump(data, f, indent=2, ensure_ascii=False)
         return data
     except Exception:
+        print('anikore: {}'.format(ani_id))
         traceback.print_exc()
         return None
 
@@ -106,8 +112,8 @@ if __name__ == '__main__':
     Just for testing.
     """
 
-    id_list = get_all_anime_list()
-    with open('anikore.json', 'w', encoding='utf-8') as f:
-        json.dump(id_list, f, indent=2)
-    # detail = get_anime_detail(5160)
+    # id_list = get_all_anime_list()
+    # with open('anikore.json', 'w', encoding='utf-8') as f:
+    #     json.dump(id_list, f, indent=2)
+    # detail = get_anime_detail(4940)
     # print(detail)
